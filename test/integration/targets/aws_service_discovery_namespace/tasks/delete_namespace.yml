@@ -1,0 +1,38 @@
+---
+- name: delete http namespace
+  aws_service_discovery_namespace:
+    name: "{{ http_namespace }}.{{ suffix }}"
+    state: absent
+  register: http_register
+
+- name: delete dns namespace
+  aws_service_discovery_namespace:
+    name: "{{ dns_namespace }}.{{ suffix }}"
+    state: absent
+  register: dns_register
+
+- name: assert that changed is True
+  assert:
+    that: >
+      http_register.changed
+      and
+      dns_register.changed
+
+- name: try delete http namespace again
+  aws_service_discovery_namespace:
+    name: "{{ http_namespace }}.{{ suffix }}"
+    state: absent
+  register: http_register
+
+- name: try delete dns namespace again
+  aws_service_discovery_namespace:
+    name: "{{ dns_namespace }}.{{ suffix }}"
+    state: absent
+  register: dns_register
+
+- name: assert that returned is False
+  assert:
+    that: >
+      not http_register.changed
+      and
+      not dns_register.changed

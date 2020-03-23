@@ -1,0 +1,47 @@
+---
+- name: ensure http namespace is present
+  aws_service_discovery_namespace:
+    name: "{{ http_namespace }}.{{ suffix }}"
+    type: http
+  check_mode: true
+  register: http_register
+
+- name: ensure dns namespace is present
+  aws_service_discovery_namespace:
+    name: "{{ dns_namespace }}.{{ suffix }}"
+    type: public_dns
+  check_mode: true
+  register: dns_register
+
+- name: assert that changed is True
+  assert:
+    that: >
+      http_register.changed
+      and
+      dns_register.changed
+
+- name: assert that properties is right
+  assert:
+    that: >
+      http_register.Properties.HttpProperties
+      and
+      dns_register.Properties.DnsProperties
+
+- name: try create http namespace again
+  aws_service_discovery_namespace:
+    name: "{{ http_namespace }}.{{ suffix }}"
+    type: http
+  register: http_register
+
+- name: try create dns namespace again
+  aws_service_discovery_namespace:
+    name: "{{ dns_namespace }}.{{ suffix }}"
+    type: public_dns
+  register: dns_register
+
+- name: assert that changed is False
+  assert:
+    that: >
+      not http_register.changed
+      and
+      not dns_register.changed
